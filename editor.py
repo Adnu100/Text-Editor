@@ -5,18 +5,89 @@ TAB = '\t'
 
 class _LineBuffer:
     '''stores mulitple lines in a list data structure'''
-    def __init__(self, l = [], curr = 0):
+    def __init__(self, maxy, maxx, l = [], curr = 0):
+        '''initialises the LineBuffer'''
         self.lines = l
-        pass
+        if l:
+            self.curline = len(self.lines) - 1
+            self.curch = len(self.lines[self.curline])
+        else:
+            self.curline = 0
+            self.curch = 0
+        self.lens = [len(line.expandtabs(4)) for line in self.lines]
+        self.setup(maxx)
+
+    def setup(self, mx):
+        '''sets the required lines on screen to display the actual line in file for each line'''
+        self.required_lines = [(i // mx) + 1 for i in self.lens]
     
-    def getscreenlines(self, my, mx):
-        pass
+    def getscreenlines(self, my, mx, pos = None):
+        '''returns the maximum lines to be shown on screen'''
+        if pos == None:
+            c = sum_ = 0
+            for i in self.required_lines[::-1]:
+                sum_ += i
+                if sum_ > my:
+                    break
+                c += 1
+            return self.lines[-c:]
+        else:
+            c = sum_ = 0
+            for i in self.required_lines[pos:]:
+                sum_ += i
+                if sum_ > my:
+                    c +=1 
+            return self.lines[pos:pos + c]
 
     def ahead(self):
-        pass
+        '''sets the focus to next character, also returns the cases to set cursor position
+        returns either of 'a', 'b', 'c' based on the condition:
+            a: when the cursor can be moved
+            b: when the cursor has to be moved to newline
+            c: when the cursor can not be moved'''
+        if self.lines:
+            if self.curline == len(self.lines) - 1:
+                if self.curch == len(self.lines[self.curch]):
+                    return 'c'
+                else:
+                    self.curch += 1
+                    return 'a'
+            else:
+                self.curch += 1
+                if self.lines[self.curline][self.curch] == '\n':
+                    self.curline += 1
+                    self.curch = 0
+                    return 'b'
+                return 'a'
+        else:
+            return 'c'
 
-    def back(self):
-        pass
+    def back(self, maxx):
+        '''sets the focus on previous character, same as _LineBuffer.ahead()
+        returns either of 'a', 'b', 'c' depending on conditions:
+            a: when the cursor can be moved
+            b: when the cursor has to be moved one line above (the last character position is stored in lastpos_cache
+            c: wehn the cursor can not be moved'''
+        if self.lines:
+            if self.curline == 0:
+                if self.curch == 0:
+                    return 'c'
+                else:
+                    self.curch -= 1
+                    return 'a'
+            else:
+                if self.curch == 0:
+                    self.curline -= 1
+                    self.curch = len(self.lines[self.curline]) - 2
+                    l = len(self.lines[self.curline])
+                    lm = self.required_lines[self.curline] * maxx
+                    self.lastpos_cache = (maxx - (lm - l)) - 1
+                    return 'b'
+                else:
+                    self.curch -= 1
+                    return 'a'
+        else:
+            return 'c'
 
     def up(self):
         pass
@@ -50,18 +121,48 @@ class Editor:
     def move_ahead(self, characters = 1, refresh = True): #done
         '''moves the cursor ahead by given number of characters'''
         y, x = self.__stdscr.getyx()
-        y, x = self.lines.ahead(characters, y, x, self.maxy, self.maxx)
-        if x != None and y != None:
-            self.__stdscr.move(self.cury, self.curx)
+        case = self.lines.ahead(characters)
+        if case == 'a':
+            x += 1
+            if x == self.maxx:
+                x = 0
+                y += 1
+            if y == self.maxy:
+                pass
+            self.__stdscr.move(y, x)
+        elif case == 'b':
+            y += 1
+            x = 0
+            if y == self.maxy:
+                pass
+            self.__stdscr.move(y + 1, 0)
+        elif case == 'c':
+            curses.beep()
+            return
         if refresh:
             self.refresh()
 
     def move_back(self, characters = 1, refresh = True): #done
         '''moves the cursor back by given number of characters'''
         y, x = self.__stdscr.getyx()
-        y, x = self.lines.back(characters, y, x, self.maxy, self.maxx)
-        if x != None and y != None:
+        case = self.lines.back(characters, self.maxx)
+        if case == 'a':
+            x -= 1
+            if x == -1:
+                y -= 1
+                x = self.maxx - 1
+            if y == -1:
+                pass
             self.__stdscr.move(y, x)
+        elif case == 'b':
+            y -= 1
+            x = self.lastpos_cache
+            if y == -1:
+                pass
+            self._stdscr.move(y, x)
+        elif case == 'c':
+            curses.beep()
+            return
         if refresh:
             self.refresh()
 
@@ -86,7 +187,8 @@ class Editor:
         pass
 
     def addtext(self, ch, attr = curses.A_NORMAL, refresh = True): # partially done but workable under no move conditions
-        if self.lines.add(ch):
+        self.lines.add(ch):
+        if pass:
             self.__stdscr.addstr(ch, attr)
         else:
             pass
