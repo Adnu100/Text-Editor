@@ -18,4 +18,5 @@ def deinitiate_curses():
     curses.nocbreak()
     curses.endwin()
 
-
+def beepsound():
+    curses.beep()

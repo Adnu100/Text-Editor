@@ -3,6 +3,7 @@ TAB = '\t'
 
 class _LineBuffer:
     '''stores mulitple lines in a list data structure'''
+
     def __init__(self, maxy, maxx, l = [], curr = 0):
         '''initialises the LineBuffer'''
         self.lines = l
@@ -12,7 +13,7 @@ class _LineBuffer:
         else:
             self.curline = 0
             self.curch = 0
-        self.lens = [len(line.expandtabs(4)) for line in self.lines]
+        self.lens = [len(line) + (line.count(TAB) * 3) for line in self.lines]
         self.setup(maxx)
 
     def setup(self, mx):
@@ -42,31 +43,32 @@ class _LineBuffer:
         returns either of 'a', 'b', 'c' based on the condition:
             a: when the cursor can be moved
             b: when the cursor has to be moved to newline
-            c: when the cursor can not be moved'''
+            c: when the cursor has to be moved by a tab
+            d: when the cursor can not be moved'''
         if self.lines:
             if self.curline == len(self.lines) - 1:
                 if self.curch == len(self.lines[self.curch]):
-                    return 'c'
+                    return 'd'
                 else:
                     self.curch += 1
-                    return 'a'
+                    return 'a' if self.lines[self.curline][self.curch - 1] != TAB else 'c'
             else:
                 self.curch += 1
                 if self.lines[self.curline][self.curch] == NEWLINE:
                     self.curline += 1
                     self.curch = 0
                     return 'b'
-                return 'a'
+                return 'a'if self.lines[self.curline]pself.curch - 1] != TAB else 'c'
         else:
-            return 'c'
+            return 'd'
 
     def back(self, maxx):
         '''sets the focus on previous character, same as _LineBuffer.ahead()
         returns either of 'a', 'b', 'c' depending on conditions:
-            a: when the cursor can be moved
-            b: when the cursor has to be moved one line above (the last character position is stored in lastpos_cache)
-            c: when the cursor has to be moved by a tab, the x-shift is stored in x_shift_cache
-            d: wehn the cursor can not be moved'''
+            a : when the cursor can be moved
+            b : when the cursor has to be moved one line above (the last character position is stored in lastpos_cache)
+            c : when the cursor has to be moved by a tab
+            d : when the cursor can not be moved'''
         if self.lines:
             if self.curline == 0:
                 if self.curch == 0:
@@ -74,47 +76,48 @@ class _LineBuffer:
                 else:
                     self.curch -= 1
                     if self.lines[self.curline][self.curch] == TAB:
-                        pass
                         return 'c'
                     else:
                         return 'a'
             else:
                 if self.curch == 0:
                     self.curline -= 1
-                    self.curch = len(self.lines[self.curline]) - 2
-                    l = len(self.lines[self.curline])
+                    self.curch = len(self.lines[self.curline]) - 1
+                    l = self.lens[self.curline]
                     lm = self.required_lines[self.curline] * maxx
                     self.lastpos_cache = (maxx - (lm - l)) - 1
                     return 'b'
                 else:
                     self.curch -= 1
-                    return 'a'
+                    if self.lines[self.curline][self.curch] == TAB:
+                        return 'c'
+                    else:
+                        return 'a'
         else:
             return 'd'
 
     def up(self):
-        '''sets the focus on the earlier line, character focus remains same is the line is lengthy enough, otherwise the character focus decreases to the greatest value it has
-        returns either of 'a', 'b', 'c', 'd' depending on conditions:
-            a: when the cursoe can be safely moved up
-            b: when the cursor can be safely moved up and requires to be moved more than one line up (the number of lines is stored in y_shift_cache
-            c: when cursor can be safely moved up but requires x-shift (the x-shift is stored in x-shift cache)
-            d: when the cursor can not be moved'''
-        if self.lines:
-            if self.curline == 0:
-                return 'd'
-            else:
-                pass 
-        else:
-            return 'd'
         pass
 
     def down(self):
         pass
 
     def add(self, ch):
-        pass
+        if self.lines:
+            if ch != NEWLINE:
+                self.lines[self.curline] = self.lines[self.curline][:self.curch] + ch + self.lines[self.curline][self.curch:]
+                self.lens[self.curline] = (self.lens[self.curline] + 1) if ch != TAB else (self.lens[self.curline] + 4)
+            else:
+                temp = self.lines[self.curline][:self.curch] + NEWLINE
+                if self.curch != len(self.lines[self.curline]):
+                    self.lines.insert(self.curline + 1, self.lines[self.curline][self.curch:])
+                    self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1].expandtabs(4)))
+                    self.lens[self.curline] = len(temp.expandtabs(4))
+                self.lines[self.curline] = temp
+        else:
+            self.lines.append(ch)
+        return self.ahead()
 
     def delete(self):
         pass
-
 

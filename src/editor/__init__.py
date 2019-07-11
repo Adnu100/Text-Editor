@@ -37,7 +37,15 @@ class Editor:
                 pass
             self.__stdscr.move(y + 1, 0)
         elif case == 'c':
-            curses.beep()
+            for _ in range(4):
+                x += 1
+                if x == self.maxx:
+                    y += 1
+                    x = 0
+                    if y == self.maxy:
+                        pass
+        elif case == 'd':
+            beepsound()
             return
         if refresh:
             self.refresh()
@@ -61,7 +69,15 @@ class Editor:
                 pass
             self._stdscr.move(y, x)
         elif case == 'c':
-            curses.beep()
+            for _ in range(4):
+                x -= 1
+                if x < 0:
+                    y -= 1
+                    x = self.maxx
+                    if y < 0:
+                        pass
+        elif case == 'd':
+            beepsound()
             return
         if refresh:
             self.refresh()
