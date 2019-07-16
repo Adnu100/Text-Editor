@@ -113,8 +113,8 @@ class _LineBuffer:
             else:
                 temp = self.lines[self.curline][:self.curch] + NEWLINE
                 self.lines.insert(self.curline + 1, self.lines[self.curline][self.curch:])
-                self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1].expandtabs(4)))
-                self.lens[self.curline] = len(temp.expandtabs(4))
+                self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1]) + 3 * self.lines[self.curline].count('\t'))
+                self.lens[self.curline] = len(temp) + 3 * temp.count('\t')
                 self.lines[self.curline] = temp
                 self.required_lines[self.curline] = (self.lens[self.curline] // maxx) + 1
                 self.required_lines.insert(self.curline + 1, (self.lens[self.curline] // maxx) + 1)

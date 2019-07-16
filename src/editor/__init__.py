@@ -36,7 +36,7 @@ class Editor:
             x = 0
             if y == self.maxy:
                 pass
-            self.__stdscr.move(y + 1, 0)
+            self.__stdscr.move(y, 0)
         elif case == 'c':
             for _ in range(4):
                 x += 1
@@ -45,6 +45,7 @@ class Editor:
                     x = 0
                     if y == self.maxy:
                         pass
+            self.__stdscr.move(y, x)
         elif case == 'd':
             beepsound()
             return
@@ -78,6 +79,7 @@ class Editor:
                     x = self.maxx
                     if y < 0:
                         pass
+            self.__stdscr.move(y, x)
         elif case == 'd':
             beepsound()
             return
@@ -107,7 +109,10 @@ class Editor:
     def addtext(self, ch, attr = curses.A_NORMAL, refresh = True): #to be done
         '''adds a character to the screen'''
         self.lines.add(ch, self.maxx)
-        self.__stdscr.addstr(ch, attr)
+        if ch != '\t':
+            self.__stdscr.addstr(ch, attr)
+        else:
+            self.__stdscr.addstr("    ", attr)
         if refresh:
             self.refresh()
         pass
