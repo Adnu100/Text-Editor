@@ -15,6 +15,7 @@ class _LineBuffer:
             self.curch = 0
         self.lens = [len(line) + (line.count(TAB) * 3) for line in self.lines]
         self.setup(maxx)
+        self.fwr = True
 
     def setup(self, mx):
         '''sets the required lines on screen to display the actual line in file for each line'''
@@ -47,7 +48,7 @@ class _LineBuffer:
             d: when the cursor can not be moved'''
         if self.lines:
             if self.curline == len(self.lines) - 1:
-                if self.curch == len(self.lines[self.curch]):
+                if self.curch == len(self.lines[self.curline]):
                     return 'd'
                 else:
                     self.curch += 1
@@ -58,7 +59,7 @@ class _LineBuffer:
                     self.curline += 1
                     self.curch = 0
                     return 'b'
-                return 'a'if self.lines[self.curline]pself.curch - 1] != TAB else 'c'
+                return 'a' if self.lines[self.curline][self.curch - 1] != TAB else 'c'
         else:
             return 'd'
 
@@ -102,21 +103,39 @@ class _LineBuffer:
     def down(self):
         pass
 
-    def add(self, ch):
+    def add(self, ch, maxx):
+        '''adds a character to the current line at the index curch (current character)'''
         if self.lines:
             if ch != NEWLINE:
                 self.lines[self.curline] = self.lines[self.curline][:self.curch] + ch + self.lines[self.curline][self.curch:]
                 self.lens[self.curline] = (self.lens[self.curline] + 1) if ch != TAB else (self.lens[self.curline] + 4)
+                self.required_lines[self.curline] = (self.lens[self.curline] // maxx) + 1
             else:
                 temp = self.lines[self.curline][:self.curch] + NEWLINE
-                if self.curch != len(self.lines[self.curline]):
-                    self.lines.insert(self.curline + 1, self.lines[self.curline][self.curch:])
-                    self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1].expandtabs(4)))
-                    self.lens[self.curline] = len(temp.expandtabs(4))
+                self.lines.insert(self.curline + 1, self.lines[self.curline][self.curch:])
+                self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1].expandtabs(4)))
+                self.lens[self.curline] = len(temp.expandtabs(4))
                 self.lines[self.curline] = temp
+                self.required_lines[self.curline] = (self.lens[self.curline] // maxx) + 1
+                self.required_lines.insert(self.curline + 1, (self.lens[self.curline] // maxx) + 1)
+                self.curline, self.curch = self.curline + 1, -1
         else:
             self.lines.append(ch)
-        return self.ahead()
+            self.lens.append(len(ch.expandtabs(4)))
+            self.required_lines.append((len(ch.expandtabs(4)) // maxx) + 1)
+        self.curch += 1
+
+    def filewriter(self):
+        if self.fwr:
+            f = open("debug.txt", "w+")
+            self.fwr = False
+        else:
+            f = open("debug.txt", "a+")
+        for x__x in self.lines:
+            f.write(list(x__x).__str__() + '\n')
+        f.write(f"curchar- {self.curch}, curline - {self.curline}")
+        f.write('\n\n')
+        f.close()
 
     def delete(self):
         pass

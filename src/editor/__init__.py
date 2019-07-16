@@ -22,6 +22,7 @@ class Editor:
         '''moves the cursor ahead by given number of characters'''
         y, x = self.__stdscr.getyx()
         case = self.lines.ahead()
+        self.lines.filewriter()
         if case == 'a':
             x += 1
             if x == self.maxx:
@@ -54,6 +55,7 @@ class Editor:
         '''moves the cursor back by given number of characters'''
         y, x = self.__stdscr.getyx()
         case = self.lines.back(self.maxx)
+        self.lines.filewriter()
         if case == 'a':
             x -= 1
             if x == -1:
@@ -64,10 +66,10 @@ class Editor:
             self.__stdscr.move(y, x)
         elif case == 'b':
             y -= 1
-            x = self.lastpos_cache
+            x = self.lines.lastpos_cache
             if y == -1:
                 pass
-            self._stdscr.move(y, x)
+            self.__stdscr.move(y, x)
         elif case == 'c':
             for _ in range(4):
                 x -= 1
@@ -103,18 +105,15 @@ class Editor:
         pass
 
     def addtext(self, ch, attr = curses.A_NORMAL, refresh = True): #to be done
-        self.lines.add(ch)
-        if True:
-            self.__stdscr.addstr(ch, attr)
-        else:
-            pass
+        '''adds a character to the screen'''
+        self.lines.add(ch, self.maxx)
+        self.__stdscr.addstr(ch, attr)
         if refresh:
             self.refresh()
         pass
 
     def delchar(self, refresh = True): # partially done but workable under no move and no big file condition
         '''deletes a character from screen and refreshes screen'''
-        self.move_back(refresh = False)
         c = self.lines.delete()
         if c == 0:
             self.__stdscr.delch()
@@ -193,9 +192,9 @@ class Editor:
         '''get a character from keyboard'''
         return self.__stdscr.getch()
 
-    def __del__(self): #done
-        '''assures that the close() function is called before the the object is deleted, or reference to the object is lost
-        necessary to ensure that deinitiate_curses() is called before the program ends in order to return the terminal its settings before the program is called'''
-        if self.__running:
-            self.close()
+    #def __del__(self): #done
+    #    '''assures that the close() function is called before the the object is deleted, or reference to the object is lost
+    #    necessary to ensure that deinitiate_curses() is called before the program ends in order to return the terminal its settings before the program is called'''
+    #    if self.__running:
+    #        self.close()
 
