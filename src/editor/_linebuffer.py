@@ -4,7 +4,7 @@ TAB = '\t'
 class _LineBuffer:
     '''stores mulitple lines in a list data structure'''
 
-    def __init__(self, maxy, maxx, l = [], curr = 0):
+    def __init__(self, maxy, maxx, l = []):
         '''initialises the LineBuffer'''
         self.lines = l
         if l:
@@ -55,7 +55,7 @@ class _LineBuffer:
                     return 'a' if self.lines[self.curline][self.curch - 1] != TAB else 'c'
             else:
                 self.curch += 1
-                if self.lines[self.curline][self.curch] == NEWLINE:
+                if self.curch == len(self.lines[self.curline]):
                     self.curline += 1
                     self.curch = 0
                     return 'b'
@@ -113,8 +113,8 @@ class _LineBuffer:
             else:
                 temp = self.lines[self.curline][:self.curch] + NEWLINE
                 self.lines.insert(self.curline + 1, self.lines[self.curline][self.curch:])
-                self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1]) + 3 * self.lines[self.curline].count('\t'))
-                self.lens[self.curline] = len(temp) + 3 * temp.count('\t')
+                self.lens.insert(self.curline + 1, len(self.lines[self.curline + 1]) + 3 * self.lines[self.curline].count(TAB))
+                self.lens[self.curline] = len(temp) + 3 * temp.count(TAB)
                 self.lines[self.curline] = temp
                 self.required_lines[self.curline] = (self.lens[self.curline] // maxx) + 1
                 self.required_lines.insert(self.curline + 1, (self.lens[self.curline] // maxx) + 1)
@@ -126,16 +126,19 @@ class _LineBuffer:
         self.curch += 1
 
     def filewriter(self):
+        '''a function which writes all the log in debug.txt file
+        use this function for debugging purposes'''
         if self.fwr:
-            f = open("debug.txt", "w+")
+            self.__f = open("debug.txt", "w+")
             self.fwr = False
-        else:
-            f = open("debug.txt", "a+")
         for x__x in self.lines:
-            f.write(list(x__x).__str__() + '\n')
-        f.write(f"curchar- {self.curch}, curline - {self.curline}")
-        f.write('\n\n')
-        f.close()
+            self.__f.write(list(x__x).__str__() + NEWLINE)
+        self.__f.write(f"curchar- {self.curch}, curline - {self.curline}")
+        self.__f.write('\n\n')
+
+    def close(self):
+        '''close the debug.txt file after this object is closed'''
+        self.__f.close()
 
     def delete(self):
         pass

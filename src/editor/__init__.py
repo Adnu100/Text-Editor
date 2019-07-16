@@ -22,7 +22,6 @@ class Editor:
         '''moves the cursor ahead by given number of characters'''
         y, x = self.__stdscr.getyx()
         case = self.lines.ahead()
-        self.lines.filewriter()
         if case == 'a':
             x += 1
             if x == self.maxx:
@@ -56,7 +55,6 @@ class Editor:
         '''moves the cursor back by given number of characters'''
         y, x = self.__stdscr.getyx()
         case = self.lines.back(self.maxx)
-        self.lines.filewriter()
         if case == 'a':
             x -= 1
             if x == -1:
@@ -180,7 +178,9 @@ class Editor:
                 f = open(filename, 'r+')
         except:
             return False
-        self.lines = _LineBuffer(self.maxy, self.maxx, f.readlines())
+        read = f.readlines()
+        read[-1] = read[-1][:-1]
+        self.lines = _LineBuffer(self.maxy, self.maxx, read)
         self.updatescreen()
         f.close()
         return True
@@ -190,7 +190,14 @@ class Editor:
         self.clear(refresh = False)
         line_list = self.lines.getscreenlines(self.maxy, self.maxx)
         for line in line_list:
-            self.__stdscr.addstr(line, curses.A_NORMAL)
+            if '\t' in line:
+                for ch in line:
+                    if ch == '\t':
+                        self.__stdscr.addstr("    ", curses.A_NORMAL)
+                    else:
+                        self.__stdscr.addstr(ch, curses.A_NORMAL)
+            else:
+                self.__stdscr.addstr(line, curses.A_NORMAL)
         self.refresh()
 
     def getch(self): #done
