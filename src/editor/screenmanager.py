@@ -21,7 +21,7 @@ class Editor:
         if self.filename:
             self.load_from_file()
 
-    def move_ahead(self, refresh = True): #done
+    def move_ahead(self, refresh = True): 
         '''moves the cursor ahead by one character'''
         y, x = self.__stdscr.getyx()
         case = self.lines.ahead()
@@ -54,7 +54,7 @@ class Editor:
         if refresh:
             self.refresh()
 
-    def move_back(self, refresh = True): #done
+    def move_back(self, refresh = True): 
         '''moves the cursor back by one character'''
         y, x = self.__stdscr.getyx()
         case = self.lines.back(self.maxx)
@@ -87,7 +87,7 @@ class Editor:
         if refresh:
             self.refresh()
 
-    def move_up(self, refresh = True): #done
+    def move_up(self, refresh = True): 
         '''moves the cursor up by one line'''
         y, x = self.__stdscr.getyx()
         case = self.lines.up(self.maxx)
@@ -102,7 +102,7 @@ class Editor:
         if refresh:
             self.refresh()
 
-    def move_down(self, refresh = True): #done
+    def move_down(self, refresh = True): 
         '''takes cursor down by one line'''
         y, x = self.__stdscr.getyx()
         case = self.lines.down(self.maxx)
@@ -139,21 +139,21 @@ class Editor:
             self.refresh()
         pass
 
-    def refresh(self): #done
+    def refresh(self): 
         '''refreshes the screen'''
         self.__stdscr.refresh()
 
-    def clear(self, refresh = True): #done
+    def clear(self, refresh = True):
         '''clears the screen'''
         self.__stdscr.clear()
         if refresh:
             self.refresh()
 
-    def updatewindowdimensions(self): #done
+    def updatewindowdimensions(self):
         '''updates the window if size of window is changed, must be called when resize event occurs'''
         self.maxy, self.maxx = self.__stdscr.getmaxyx()
 
-    def close(self): #done
+    def close(self): 
         '''closes the current instance and deinitiates the curses if its the last instance'''
         if self.__running:
             self.__running = False
@@ -162,7 +162,7 @@ class Editor:
                 self.__stdscr.keypad(0)
                 deinitiate_curses()
 
-    def save_to_file(self, filename = None): #done
+    def save_to_file(self, filename = None): 
         '''saves the changes to the file
         if filename not provided, then uses the filename given at initialisation if given, else does nothing'''
         try:
@@ -181,7 +181,7 @@ class Editor:
         f.close()
         return True
 
-    def load_from_file(self, filename = None): #done
+    def load_from_file(self, filename = None): 
         '''loads the text from the filename
         if filename not provided, then uses the filename given at initialisation if given, else does nothing'''
         try:
@@ -198,7 +198,7 @@ class Editor:
         f.close()
         return True
 
-    def updatescreen(self): #done
+    def updatescreen(self): 
         '''fills screen with the text in file, if file is too large to fit into the screen, it shows the last lines showable from file in the screen'''
         self.clear(refresh = False)
         line_list = self.lines.getscreenlines(self.maxy, self.maxx)
@@ -213,11 +213,11 @@ class Editor:
                 self.__stdscr.addstr(line, curses.A_NORMAL)
         self.refresh()
 
-    def getch(self): #done
+    def getch(self): 
         '''get a character from keyboard'''
         return self.__stdscr.getch()
 
-    #def __del__(self): #done
+    #def __del__(self): 
     #    '''assures that the close() function is called before the the object is deleted, or reference to the object is lost
     #    necessary to ensure that deinitiate_curses() is called before the program ends in order to return the terminal its settings before the program is called'''
     #    if self.__running:
