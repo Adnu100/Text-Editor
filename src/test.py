@@ -55,6 +55,10 @@ if __name__ == '__main__':
                 e.move_back()
             elif key == curses.KEY_RIGHT:
                 e.move_ahead()
+            elif key == curses.KEY_UP:
+                e.move_up()
+            elif key == curses.KEY_DOWN:
+                e.move_down()
             else:
                 e.addtext(chr(key & curses.A_CHARTEXT))
             key = chr(key & curses.A_CHARTEXT)

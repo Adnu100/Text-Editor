@@ -97,11 +97,48 @@ class _LineBuffer:
         else:
             return 'd'
 
-    def up(self):
-        pass
+    def up(self, mx):
+        '''sets the focus on the upper line
+        returns either of 'a' and 'b' depending on the conditions:
+            a : when the cursor can be moved to the upper line (the number of lines by which the cursor needs to go up is stored in lineup_cache while the cursor x position is stored in cursorpos_cache
+            B : when the cursor can not be moved up'''
+        if self.lines:
+            if self.curline != 0:
+                pos1 = len(self.lines[self.curline][:self.curch]) + self.lines[self.curline][:self.curch].count(TAB) * 3
+                pos1_line = pos1 // mx + 1
+                self.lineup_cache = pos1_line
+                l = len(self.lines[self.curline - 1])
+                if self.curch >= l:
+                    self.curch = l - 1
+                pos2 = len(self.lines[self.curline - 1][:self.curch]) + self.lines[self.curline - 1][:self.curch].count(TAB) * 3
+                pos2_line = pos2 // mx + 1
+                pos2_line = self.required_lines[self.curline - 1] - pos2_line
+                self.lineup_cache += pos2_line
+                self.cursorpos_cache = pos2 % mx
+                self.curline -= 1
+                return 'a'
+        return 'b'
 
-    def down(self):
-        pass
+    def down(self, mx):
+        '''sets the focus onw line down
+        returns either of 'a' and 'b' depending on conditions:
+            a : when the cursor can be moved down (the number of lines the cursor needs to be shifted down is stored in linedown_cache while the cursor position is stored in cursorpos_cache
+            b : when the cursor can not be moved down'''
+        if self.lines:
+            if self.curline != len(self.lines) - 1:
+                pos1 = len(self.lines[self.curline][:self.curch]) + self.lines[self.curline][:self.curch].count(TAB) * 3
+                pos1_line = pos1 // mx + 1
+                self.linedown_cache = self.required_lines[self.curline] - pos1_line
+                l = len(self.lines[self.curline + 1])
+                if self.curch >= l:
+                    self.curch = l - 1
+                pos2 = len(self.lines[self.curline + 1][:self.curch]) + self.lines[self.curline + 1][:self.curch].count(TAB) * 3
+                pos2_line = pos2 // mx + 1
+                self.linedown_cache += pos2_line
+                self.cursorpos_cache = pos2 % mx + 1
+                self.curline += 1
+                return 'a'
+        return 'b'
 
     def add(self, ch, maxx):
         '''adds a character to the current line at the index curch (current character)'''
