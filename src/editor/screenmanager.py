@@ -130,11 +130,25 @@ class Editor:
 
     def delchar(self, refresh = True): # partially done but workable under no move and no big file condition
         '''deletes a character from screen and refreshes screen'''
-        c = self.lines.delete()
-        if c == 0:
-            self.__stdscr.delch()
-        else:
+        y, x = self.__stdscr.getyx()
+        case = self.lines.delete(self.maxx)
+        if case == 'a' or case == 'b':
+            range_ = 1 if case == 'a' else 4
+            for _ in range(range_):
+                self.__stdscr.delch()
+                for i in range(self.lines.up_cache):
+                    charinfo = self.__stdscr.inch(y + 1 + i, 0)
+                    self.__stdscr.move(y + i, self.maxx - 1)
+                    self.__stdscr.addstr(chr(charinfo & curses.A_CHARTEXT))
+                    self.__stdscr.move(y + 1 + i, 0)
+                    self.__stdscr.delch()
+                self.__stdscr.move(y, x)
+        elif case == 'c':
             pass
+        elif case == 'd':
+            pass
+        else:
+            beepsound()
         if refresh:
             self.refresh()
         pass

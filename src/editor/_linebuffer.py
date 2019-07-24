@@ -162,6 +162,42 @@ class _LineBuffer:
             self.required_lines.append((len(ch.expandtabs(4)) // maxx) + 1)
         self.curch += 1
 
+    def delete(self, mx):
+        '''deletes the currrent focused character
+        returns either of 'a', 'b', 'c', 'd', 'e' depending on the conditions:
+            a : when character can be deleted simply (the number of more lines the editor needs to change is stored in up_cache)
+            b : when character can be deleted and is a tab
+            c : when character can be deleted but it reduces the number of required lines by 1
+            d : when character deleted is a newline character, thus two lines are joined
+            e : when there is no character to delete (empty screen)'''
+        if self.lines:
+            if self.lines[0] == '':
+                return 'e'
+            if self.lines[self.curline][self.curch] != NEWLINE:
+                if self.lines[self.curline][self.curch] == TAB:
+                    case = 'b'
+                else:
+                    case = 'a'
+                curr = self.required_lines[self.curline]
+                self.lens[self.curline] -= 1 if self.lines[self.curline][self.curch] != TAB else 4
+                self.lines[self.curline] = self.lines[self.curline][:self.curch] + self.lines[self.curline][self.curch + 1:]
+                self.required_lines[self.curline] = (self.lens[self.curline] // mx) + 1
+                x = len(self.lines[self.curline][:self.curch]) + self.lines[self.curline][:self.curch].count(TAB) * 3
+                x = x // mx + 1
+                self.up_cache = self.required_lines[self.curline] - x
+                return 'c' if self.required_lines[self.curline] - curr else case
+            else:
+                self.lines[self.curline] = self.lines[self.curline][:self.curch] + self.lines[self.curline + 1]
+                self.lines.pop(self.curline + 1)
+                self.lens.pop(self.curline + 1)
+                self.required_lines.pop(self.curline + 1)
+                self.lens = len(self.lines[self.curline]) + self.lines[self.curline].count(TAB) * 3
+                self.required_lines[self.curline] = (self.lens[self.curline] // mx) + 1
+                return 'd'
+        else:
+            return 'e'
+        pass
+
     def filewriter(self):
         '''a function which writes all the log in debug.txt file
         use this function for debugging purposes'''
@@ -176,7 +212,4 @@ class _LineBuffer:
     def close(self):
         '''close the debug.txt file after this object is closed'''
         self.__f.close()
-
-    def delete(self):
-        pass
 

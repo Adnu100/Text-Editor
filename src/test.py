@@ -48,6 +48,7 @@ if __name__ == '__main__':
         while key != 'Q':
             key = e.getch()
             if key == curses.KEY_BACKSPACE:
+                e.move_back(refresh = False)
                 e.delchar()
             elif key == 10 or key == curses.KEY_ENTER:
                 e.addtext('\n')
