@@ -135,7 +135,7 @@ class _LineBuffer:
                 pos2 = len(self.lines[self.curline + 1][:self.curch]) + self.lines[self.curline + 1][:self.curch].count(TAB) * 3
                 pos2_line = pos2 // mx + 1
                 self.linedown_cache += pos2_line
-                self.cursorpos_cache = pos2 % mx + 1
+                self.cursorpos_cache = pos2 % mx
                 self.curline += 1
                 return 'a'
         return 'b'
