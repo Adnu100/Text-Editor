@@ -30,29 +30,29 @@ class Editor:
             if x == self.maxx:
                 x = 0
                 y += 1
-            if y == self.maxy:
-                pass
             self.__stdscr.move(y, x)
         elif case == 'b':
             y += 1
             x = 0
             if y == self.maxy:
-                pass
-            self.__stdscr.move(y, 0)
+                self.updatescreen(self.topln + 1, cursor = "last")
+                self.move_up(refresh = False)
+                while self.move_ahead(refresh = False) != 'b': None
+            else:
+                self.__stdscr.move(y, 0)
         elif case == 'c':
             for _ in range(4):
                 x += 1
                 if x == self.maxx:
                     y += 1
                     x = 0
-                    if y == self.maxy:
-                        pass
             self.__stdscr.move(y, x)
         elif case == 'd':
             beepsound()
             return
         if refresh:
             self.refresh()
+        return case
 
     def move_back(self, refresh = True): 
         '''moves the cursor back by one character'''
@@ -63,23 +63,22 @@ class Editor:
             if x == -1:
                 y -= 1
                 x = self.maxx - 1
-            if y == -1:
-                pass
             self.__stdscr.move(y, x)
         elif case == 'b':
             y -= 1
             x = self.lines.lastpos_cache
             if y == -1:
-                pass
-            self.__stdscr.move(y, x)
+                self.updatescreen(self.topln - 1, cursor = "start")
+                self.move_down(refresh = False)
+                self.move_back(refresh = False)
+            else:
+                self.__stdscr.move(y, x)
         elif case == 'c':
             for _ in range(4):
                 x -= 1
                 if x < 0:
                     y -= 1
-                    x = self.maxx
-                    if y < 0:
-                        pass
+                    x = self.maxx - 1
             self.__stdscr.move(y, x)
         elif case == 'd':
             beepsound()
@@ -212,10 +211,10 @@ class Editor:
         f.close()
         return True
 
-    def updatescreen(self): 
+    def updatescreen(self, pos = None, cursor = "last"): 
         '''fills screen with the text in file, if file is too large to fit into the screen, it shows the last lines showable from file in the screen'''
         self.clear(refresh = False)
-        line_list = self.lines.getscreenlines(self.maxy, self.maxx)
+        line_list, line_number = self.lines.getscreenlines(self.maxy, self.maxx, pos, cursor)
         for line in line_list:
             if '\t' in line:
                 for ch in line:
@@ -225,6 +224,7 @@ class Editor:
                         self.__stdscr.addstr(ch, curses.A_NORMAL)
             else:
                 self.__stdscr.addstr(line, curses.A_NORMAL)
+        self.topln = line_number
         self.refresh()
 
     def getch(self): 

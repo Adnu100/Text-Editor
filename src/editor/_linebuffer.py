@@ -7,10 +7,7 @@ class _LineBuffer:
     def __init__(self, maxy, maxx, l = []):
         '''initialises the LineBuffer'''
         self.lines = l
-        if l:
-            self.curline = len(self.lines) - 1
-            self.curch = len(self.lines[self.curline])
-        else:
+        if not l:
             self.curline = 0
             self.curch = 0
         self.lens = [len(line) + (line.count(TAB) * 3) for line in self.lines]
@@ -21,7 +18,7 @@ class _LineBuffer:
         '''sets the required lines on screen to display the actual line in file for each line'''
         self.required_lines = [(i // mx) + 1 for i in self.lens]
     
-    def getscreenlines(self, my, mx, pos = None):
+    def getscreenlines(self, my, mx, pos = None, cursor = "last"):
         '''returns the maximum lines to be shown on screen'''
         if pos == None:
             c = sum_ = 0
@@ -30,14 +27,27 @@ class _LineBuffer:
                 if sum_ > my:
                     break
                 c += 1
-            return self.lines[-c:]
+            if pos == "last":
+                self.curline = len(self.lines) - 1
+                self.curch = len(self.lines[self.curline])
+            else:
+                self.curline = len(self.lines) - c
+                self.curch = 0
+            return self.lines[-c:], len(self.lines) - len(self.lines[-c:])
         else:
             c = sum_ = 0
             for i in self.required_lines[pos:]:
                 sum_ += i
                 if sum_ > my:
-                    c +=1 
-            return self.lines[pos:pos + c]
+                    break
+                c += 1 
+            if pos == "last":
+                self.curline = pos + c - 1
+                self.curch = len(self.lines[self.curline])
+            else:
+                self.curline = pos
+                self.curch = 0
+            return self.lines[pos:pos + c], pos
 
     def ahead(self):
         '''sets the focus to next character, also returns the cases to set cursor position
