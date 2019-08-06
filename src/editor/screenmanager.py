@@ -165,6 +165,7 @@ class Editor:
     def updatewindowdimensions(self):
         '''updates the window if size of window is changed, must be called when resize event occurs'''
         self.maxy, self.maxx = self.__stdscr.getmaxyx()
+        self.maxy -= 1
 
     def close(self): 
         '''closes the current instance and deinitiates the curses if its the last instance'''
@@ -225,6 +226,10 @@ class Editor:
             else:
                 self.__stdscr.addstr(line, curses.A_NORMAL)
         self.topln = line_number
+        if cursor == "start":
+            self.__stdscr.move(0, 0)
+        else:
+            self.move_back(refresh = False)
         self.refresh()
 
     def getch(self): 

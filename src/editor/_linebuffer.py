@@ -11,10 +11,10 @@ class _LineBuffer:
             self.curline = 0
             self.curch = 0
         self.lens = [len(line) + (line.count(TAB) * 3) for line in self.lines]
-        self.setup(maxx)
+        self.__setup(maxx)
         self.fwr = True
 
-    def setup(self, mx):
+    def __setup(self, mx):
         '''sets the required lines on screen to display the actual line in file for each line'''
         self.required_lines = [(i // mx) + 1 for i in self.lens]
     
@@ -27,13 +27,14 @@ class _LineBuffer:
                 if sum_ > my:
                     break
                 c += 1
-            if pos == "last":
+            if cursor == "last":
                 self.curline = len(self.lines) - 1
                 self.curch = len(self.lines[self.curline])
             else:
                 self.curline = len(self.lines) - c
                 self.curch = 0
-            return self.lines[-c:], len(self.lines) - len(self.lines[-c:])
+            lns =  self.lines[-c:]
+            return lns, len(self.lines) - len(lns)
         else:
             c = sum_ = 0
             for i in self.required_lines[pos:]:
@@ -41,7 +42,7 @@ class _LineBuffer:
                 if sum_ > my:
                     break
                 c += 1 
-            if pos == "last":
+            if cursor == "last":
                 self.curline = pos + c - 1
                 self.curch = len(self.lines[self.curline])
             else:
