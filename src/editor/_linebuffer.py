@@ -18,7 +18,7 @@ class _LineBuffer:
         '''sets the required lines on screen to display the actual line in file for each line'''
         self.required_lines = [(i // mx) + 1 for i in self.lens]
     
-    def getscreenlines(self, my, mx, pos = None, cursor = "last"):
+    def getscreenlines(self, my, mx, pos = None, cursor = "last", set_cursor = True):
         '''returns the maximum lines to be shown on screen'''
         if pos == None:
             c = sum_ = 0
@@ -27,12 +27,13 @@ class _LineBuffer:
                 if sum_ > my:
                     break
                 c += 1
-            if cursor == "last":
-                self.curline = len(self.lines) - 1
-                self.curch = len(self.lines[self.curline])
-            else:
-                self.curline = len(self.lines) - c
-                self.curch = 0
+            if set_cursor:
+                if cursor == "last":
+                    self.curline = len(self.lines) - 1
+                    self.curch = len(self.lines[self.curline])
+                else:
+                    self.curline = len(self.lines) - c
+                    self.curch = 0
             lns =  self.lines[-c:]
             return lns, len(self.lines) - len(lns)
         else:
@@ -42,12 +43,13 @@ class _LineBuffer:
                 if sum_ > my:
                     break
                 c += 1 
-            if cursor == "last":
-                self.curline = pos + c - 1
-                self.curch = len(self.lines[self.curline])
-            else:
-                self.curline = pos
-                self.curch = 0
+            if set_cursor:
+                if cursor == "last":
+                    self.curline = pos + c - 1
+                    self.curch = len(self.lines[self.curline])
+                else:
+                    self.curline = pos
+                    self.curch = 0
             return self.lines[pos:pos + c], pos
 
     def ahead(self):
@@ -123,6 +125,7 @@ class _LineBuffer:
                     self.curch = l - 1
                 pos2 = len(self.lines[self.curline - 1][:self.curch]) + self.lines[self.curline - 1][:self.curch].count(TAB) * 3
                 pos2_line = pos2 // mx + 1
+                self.posline_cache = pos2_line - 1
                 pos2_line = self.required_lines[self.curline - 1] - pos2_line
                 self.lineup_cache += pos2_line
                 self.cursorpos_cache = pos2 % mx

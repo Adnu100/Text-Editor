@@ -94,8 +94,12 @@ class Editor:
             y -= self.lines.lineup_cache
             x = self.lines.cursorpos_cache
             if y < 0:
-                pass
-            self.__stdscr.move(y, x)
+                self.updatescreen(self.topln - 1, cursor = "start", set_cursor = False)
+                y = self.lines.posline_cache
+                x = self.lines.cursorpos_cache
+                self.__stdscr.move(y, x)
+            else:
+                self.__stdscr.move(y, x)
         elif case == 'b':
             beepsound()
         if refresh:
@@ -212,10 +216,10 @@ class Editor:
         f.close()
         return True
 
-    def updatescreen(self, pos = None, cursor = "last"): 
+    def updatescreen(self, pos = None, cursor = "last", set_cursor = True): 
         '''fills screen with the text in file, if file is too large to fit into the screen, it shows the last lines showable from file in the screen'''
         self.clear(refresh = False)
-        line_list, line_number = self.lines.getscreenlines(self.maxy, self.maxx, pos, cursor)
+        line_list, line_number = self.lines.getscreenlines(self.maxy, self.maxx, pos, cursor, set_cursor)
         for line in line_list:
             if '\t' in line:
                 for ch in line:
