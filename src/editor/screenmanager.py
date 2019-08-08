@@ -112,9 +112,14 @@ class Editor:
         if case == 'a':
             y += self.lines.linedown_cache
             x = self.lines.cursorpos_cache
-            if y > self.maxy:
-                pass
-            self.__stdscr.move(y, x)
+            if y >= self.maxy:
+                self.updatescreen(self.topln + 1, cursor = "last", set_cursor = False)
+                y, x = self.__stdscr.getyx()
+                y -= self.lines.posline_cache
+                x = self.lines.cursorpos_cache
+                self.__stdscr.move(y, x)
+            else:
+                self.__stdscr.move(y, x)
         elif case == 'b':
             beepsound()
         if refresh:
@@ -232,7 +237,7 @@ class Editor:
         self.topln = line_number
         if cursor == "start":
             self.__stdscr.move(0, 0)
-        else:
+        elif line_list[-1][-1] == '\n':
             self.move_back(refresh = False)
         self.refresh()
 
