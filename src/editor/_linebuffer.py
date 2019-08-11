@@ -23,6 +23,7 @@ class _LineBuffer:
         c = sum_ = 0
         sum_ = sum(self.required_lines[firstline:self.curline])
         x = len(self.lines[self.curline][:self.curch]) + self.lines[self.curline][:self.curch].count(TAB) * 3
+        x %= mx
         y = sum_ + (self.curch // mx)
         return y, x
     
