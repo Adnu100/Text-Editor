@@ -18,6 +18,7 @@ class Editor:
         self.updatewindowdimensions()
         self.lines = _LineBuffer(self.maxy, self.maxx)
         self.__running = True
+        self._topln = 0
         if self.filename:
             self.load_from_file()
 
@@ -35,7 +36,7 @@ class Editor:
             y += 1
             x = 0
             if y == self.maxy:
-                self.updatescreen(self.topln + 1, cursor = "last")
+                self.updatescreen(1, cursor = "last")
                 self.move_up(refresh = False)
                 while self.move_ahead(refresh = False) != 'b': None
             else:
@@ -68,7 +69,7 @@ class Editor:
             y -= 1
             x = self.lines.lastpos_cache
             if y == -1:
-                self.updatescreen(self.topln - 1, cursor = "start")
+                self.updatescreen(-1, cursor = "start")
                 self.move_down(refresh = False)
                 self.move_back(refresh = False)
             else:
@@ -94,7 +95,7 @@ class Editor:
             y -= self.lines.lineup_cache
             x = self.lines.cursorpos_cache
             if y < 0:
-                self.updatescreen(self.topln - 1, cursor = "start", set_cursor = False)
+                self.updatescreen(-1, cursor = "start", set_cursor = False)
                 y = self.lines.posline_cache
                 x = self.lines.cursorpos_cache
                 self.__stdscr.move(y, x)
@@ -113,7 +114,7 @@ class Editor:
             y += self.lines.linedown_cache
             x = self.lines.cursorpos_cache
             if y >= self.maxy:
-                self.updatescreen(self.topln + 1, cursor = "last", set_cursor = False)
+                self.updatescreen(1, cursor = "last", set_cursor = False)
                 y, x = self.__stdscr.getyx()
                 y -= self.lines.posline_cache
                 x = self.lines.cursorpos_cache
@@ -151,15 +152,12 @@ class Editor:
                     self.__stdscr.move(y + 1 + i, 0)
                     self.__stdscr.delch()
                 self.__stdscr.move(y, x)
-        elif case == 'c':
-            pass
-        elif case == 'd':
-            pass
+        elif case == 'c' or case == 'd':
+            self.updatescreen(0, cursor = "current");
         else:
             beepsound()
         if refresh:
             self.refresh()
-        pass
 
     def refresh(self): 
         '''refreshes the screen'''
@@ -221,10 +219,14 @@ class Editor:
         f.close()
         return True
 
-    def updatescreen(self, pos = None, cursor = "last", set_cursor = True): 
+    def updatescreen(self, movement = None, cursor = "last", set_cursor = True): 
         '''fills screen with the text in file, if file is too large to fit into the screen, it shows the last lines showable from file in the screen'''
+        if movement != None:
+            self._topln += movement
+        else:
+            self._topln = movement
         self.clear(refresh = False)
-        line_list, line_number = self.lines.getscreenlines(self.maxy, self.maxx, pos, cursor, set_cursor)
+        line_list, self._topln = self.lines.getscreenlines(self.maxy, self.maxx, self._topln, cursor, set_cursor)
         for line in line_list:
             if '\t' in line:
                 for ch in line:
@@ -234,9 +236,10 @@ class Editor:
                         self.__stdscr.addstr(ch, curses.A_NORMAL)
             else:
                 self.__stdscr.addstr(line, curses.A_NORMAL)
-        self.topln = line_number
         if cursor == "start":
             self.__stdscr.move(0, 0)
+        elif cursor == "current":
+            self.__stdscr.move(*self.lines.getyxposition(self._topln, self.maxx))
         elif line_list[-1][-1] == '\n':
             self.move_back(refresh = False)
         self.refresh()

@@ -17,6 +17,14 @@ class _LineBuffer:
     def __setup(self, mx):
         '''sets the required lines on screen to display the actual line in file for each line'''
         self.required_lines = [(i // mx) + 1 for i in self.lens]
+
+    def getyxposition(self, firstline, mx):
+        '''returns the y and x coordinates of the current character'''
+        c = sum_ = 0
+        sum_ = sum(self.required_lines[firstline:self.curline])
+        x = len(self.lines[self.curline][:self.curch]) + self.lines[self.curline][:self.curch].count(TAB) * 3
+        y = sum_ + (self.curch // mx)
+        return y, x
     
     def getscreenlines(self, my, mx, pos = None, cursor = "last", set_cursor = True):
         '''returns the maximum lines to be shown on screen'''
@@ -31,7 +39,7 @@ class _LineBuffer:
                 if cursor == "last":
                     self.curline = len(self.lines) - 1
                     self.curch = len(self.lines[self.curline])
-                else:
+                elif cursor == "start":
                     self.curline = len(self.lines) - c
                     self.curch = 0
             lns =  self.lines[-c:]
@@ -47,7 +55,7 @@ class _LineBuffer:
                 if cursor == "last":
                     self.curline = pos + c - 1
                     self.curch = len(self.lines[self.curline])
-                else:
+                elif cursor == "start":
                     self.curline = pos
                     self.curch = 0
             return self.lines[pos:pos + c], pos
@@ -206,12 +214,11 @@ class _LineBuffer:
                 self.lines.pop(self.curline + 1)
                 self.lens.pop(self.curline + 1)
                 self.required_lines.pop(self.curline + 1)
-                self.lens = len(self.lines[self.curline]) + self.lines[self.curline].count(TAB) * 3
+                self.lens[self.curline] = len(self.lines[self.curline]) + self.lines[self.curline].count(TAB) * 3
                 self.required_lines[self.curline] = (self.lens[self.curline] // mx) + 1
                 return 'd'
         else:
             return 'e'
-        pass
 
     def filewriter(self):
         '''a function which writes all the log in debug.txt file
