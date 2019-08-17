@@ -128,16 +128,46 @@ class Editor:
 
     def addtext(self, ch, attr = curses.A_NORMAL, refresh = True): #to be done
         '''adds a character to the screen'''
-        self.lines.add(ch, self.maxx)
-        if ch != '\t':
-            self.__stdscr.addstr(ch, attr)
+        case = self.lines.add(ch, self.maxx)
+        y, x = self.__stdscr.getyx()
+        if ch == '\t':
+            for _ in range(4):
+                self.addtext(' ', refresh = False)
+        elif ch == '\n' or case == 'c':
+            if y == self.maxy - 1:
+                self.updatescreen(1, cursor = "current")
+            else:
+                self.updatescreen(0, cursor = "current")
+            return
         else:
-            self.__stdscr.addstr("    ", attr)
+            if y == self.maxy - 1:
+                if x == self.maxx - 1:
+                    self.updatescreen(1, cursor = "current")
+                    return
+                else:
+                    if case == 'a':
+                        self.__stdscr.addch(ch, attr)
+                    elif case == 'b':
+                        self.__stdscr.insch(ch, attr)
+            else:
+                if case == 'a':
+                    self.__stdscr.addch(ch, attr)
+                elif case == 'b':
+                    self.updatescreen(0, cursor = "current")
+                    return
         if refresh:
             self.refresh()
-        pass
 
-    def delchar(self, refresh = True): # partially done but workable under no move and no big file condition
+        '''self.lines.add(ch, self.maxx)
+        if ch != '\t':
+            self.__stdscr.insch(ch, attr)
+        else:
+            self.__stdscr.insstr("    ", attr)
+        if refresh:
+            self.refresh()
+        pass'''
+
+    def delchar(self, refresh = True): 
         '''deletes a character from screen and refreshes screen'''
         y, x = self.__stdscr.getyx()
         case = self.lines.delete(self.maxx)
@@ -226,6 +256,7 @@ class Editor:
         else:
             self._topln = movement
         self.clear(refresh = False)
+        self.__stdscr.move(0, 0)
         line_list, self._topln = self.lines.getscreenlines(self.maxy, self.maxx, self._topln, cursor, set_cursor)
         for line in line_list:
             if '\t' in line:

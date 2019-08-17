@@ -165,12 +165,25 @@ class _LineBuffer:
         return 'b'
 
     def add(self, ch, maxx):
-        '''adds a character to the current line at the index curch (current character)'''
+        '''adds a character to the current line at the index curch (current character)
+        returns either of 'a', 'b', 'c' and 'd' depending upon conditions:
+            a : when the character is just appended to line
+            b : when the character is inserted in middle of a line
+            c : when the character changes the number of required lines of the current line'''
         if self.lines:
+            case = None
+            if self.curch == len(self.lines[self.curline]):
+                case = 'a'
+            prev = self.required_lines[self.curline]
             if ch != NEWLINE:
                 self.lines[self.curline] = self.lines[self.curline][:self.curch] + ch + self.lines[self.curline][self.curch:]
                 self.lens[self.curline] = (self.lens[self.curline] + 1) if ch != TAB else (self.lens[self.curline] + 4)
                 self.required_lines[self.curline] = (self.lens[self.curline] // maxx) + 1
+                if self.required_lines[self.curline - 1] == prev:
+                    if case == None:
+                        case = 'b'
+                else:
+                    case = 'c'
             else:
                 temp = self.lines[self.curline][:self.curch] + NEWLINE
                 self.lines.insert(self.curline + 1, self.lines[self.curline][self.curch:])
@@ -180,11 +193,18 @@ class _LineBuffer:
                 self.required_lines[self.curline] = (self.lens[self.curline] // maxx) + 1
                 self.required_lines.insert(self.curline + 1, (self.lens[self.curline] // maxx) + 1)
                 self.curline, self.curch = self.curline + 1, -1
+                if self.required_lines[self.curline - 1] == prev:
+                    if case == None:
+                        case = 'b'
+                else:
+                    case = 'c'
         else:
             self.lines.append(ch)
             self.lens.append(len(ch.expandtabs(4)))
             self.required_lines.append((len(ch.expandtabs(4)) // maxx) + 1)
+            case = 'a'
         self.curch += 1
+        return case
 
     def delete(self, mx):
         '''deletes the currrent focused character
